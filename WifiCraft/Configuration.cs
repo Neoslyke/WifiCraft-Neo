@@ -63,12 +63,6 @@ namespace WifiCraft
             }
         };
 
-        /// <summary>
-        /// Show debug messages in console
-        /// </summary>
-        [JsonProperty(Order = 6)]
-        public bool DebugMode { get; set; } = false;
-
         private static string ConfigPath => Path.Combine(TShock.SavePath, "WifiCraft.json");
 
         public static Configuration Load()
@@ -94,7 +88,6 @@ namespace WifiCraft
             {
                 config = new Configuration();
                 config.Save();
-                TShock.Log.ConsoleInfo("[WifiCraft] Created default configuration file.");
             }
 
             return config;
