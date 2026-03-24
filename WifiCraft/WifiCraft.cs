@@ -12,9 +12,9 @@ namespace WifiCraft
     public class WifiCraftPlugin : TerrariaPlugin
     {
         public override string Name => "WifiCraft";
-        public override string Author => "Your Name";
+        public override string Author => "Neoslyke";
         public override string Description => "Extend chest crafting range - use materials from distant chests!";
-        public override Version Version => Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0);
+        public override Version Version => new Version(2, 1, 0);
 
         private const int MaxChestItems = 40;
 
