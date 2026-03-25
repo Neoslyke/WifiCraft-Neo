@@ -43,8 +43,6 @@ namespace WifiCraft
             {
                 HelpText = "WifiCraft commands - extend your chest crafting range"
             });
-
-            TShock.Log.ConsoleInfo("[WifiCraft] Plugin loaded!");
         }
 
         protected override void Dispose(bool disposing)
