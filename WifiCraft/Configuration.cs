@@ -7,39 +7,21 @@ namespace WifiCraft
 {
     public class Configuration
     {
-        /// <summary>
-        /// Enable or disable the plugin
-        /// </summary>
         [JsonProperty(Order = 0)]
         public bool Enabled { get; set; } = true;
 
-        /// <summary>
-        /// The range in tiles for chest crafting (vanilla Terraria is ~4-5 tiles)
-        /// </summary>
         [JsonProperty(Order = 1)]
         public int CraftingRangeTiles { get; set; } = 15;
 
-        /// <summary>
-        /// The range in tiles for quick-stack to nearby chests
-        /// </summary>
         [JsonProperty(Order = 2)]
         public int QuickStackRangeTiles { get; set; } = 15;
 
-        /// <summary>
-        /// How often to sync chest contents to players (in game ticks, 60 = 1 second)
-        /// </summary>
         [JsonProperty(Order = 3)]
         public int SyncIntervalTicks { get; set; } = 30;
 
-        /// <summary>
-        /// Maximum number of chests to process per player per sync
-        /// </summary>
         [JsonProperty(Order = 4)]
         public int MaxChestsPerSync { get; set; } = 100;
 
-        /// <summary>
-        /// Permission-based range overrides
-        /// </summary>
         [JsonProperty(Order = 5)]
         public PermissionRange[] PermissionRanges { get; set; } = new[]
         {

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -24,7 +23,7 @@ namespace WifiCraft
 
         public WifiCraftPlugin(Main game) : base(game)
         {
-            Order = 1;
+            Order = 10;
         }
 
         public override void Initialize()
@@ -36,6 +35,7 @@ namespace WifiCraft
             ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
             ServerApi.Hooks.NetGetData.Register(this, OnNetGetData);
             ServerApi.Hooks.ServerLeave.Register(this, OnPlayerLeave);
+            ServerApi.Hooks.GamePostInitialize.Register(this, OnGamePostInitialize);
 
             GeneralHooks.ReloadEvent += OnReload;
 
@@ -43,6 +43,8 @@ namespace WifiCraft
             {
                 HelpText = "WifiCraft commands - extend your chest crafting range"
             });
+
+            TShock.Log.ConsoleInfo("[WifiCraft] Plugin loaded!");
         }
 
         protected override void Dispose(bool disposing)
@@ -52,16 +54,25 @@ namespace WifiCraft
                 ServerApi.Hooks.GameUpdate.Deregister(this, OnGameUpdate);
                 ServerApi.Hooks.NetGetData.Deregister(this, OnNetGetData);
                 ServerApi.Hooks.ServerLeave.Deregister(this, OnPlayerLeave);
+                ServerApi.Hooks.GamePostInitialize.Deregister(this, OnGamePostInitialize);
 
                 GeneralHooks.ReloadEvent -= OnReload;
+
+                Commands.ChatCommands.RemoveAll(c => c.Names.Contains("wificraft") || c.Names.Contains("wc"));
             }
             base.Dispose(disposing);
+        }
+
+        private void OnGamePostInitialize(EventArgs args)
+        {
+            LootSyncCompat.Reinitialize();
         }
 
         private void OnReload(ReloadEventArgs args)
         {
             _config = Configuration.Load();
             _chestManager = new RangeManager(_config);
+            LootSyncCompat.Reinitialize();
 
             args.Player?.SendSuccessMessage("[WifiCraft] Configuration reloaded!");
             TShock.Log.ConsoleInfo("[WifiCraft] Configuration reloaded!");
@@ -87,7 +98,6 @@ namespace WifiCraft
                 }
                 catch
                 {
-                    // Silently ignore sync errors
                 }
             }
         }
@@ -115,7 +125,6 @@ namespace WifiCraft
             }
             catch
             {
-                // Silently ignore packet handling errors
             }
         }
 
@@ -126,6 +135,11 @@ namespace WifiCraft
 
             int x = reader.ReadInt16();
             int y = reader.ReadInt16();
+
+            if (!LootSyncCompat.IsChestSafeToSync(x, y))
+            {
+                return;
+            }
 
             int chestId = Chest.FindChest(x, y);
             if (chestId == -1) return;
@@ -174,6 +188,14 @@ namespace WifiCraft
 
             if (chestId < 0 || chestId >= Main.maxChests) return;
 
+            Chest? chest = Main.chest[chestId];
+            if (chest == null) return;
+
+            if (!LootSyncCompat.IsChestSafeToSync(chest.x, chest.y))
+            {
+                return;
+            }
+
             _chestManager.IsChestInRange(player, chestId);
         }
 
@@ -181,8 +203,6 @@ namespace WifiCraft
         {
             _chestManager.ClearPlayer(args.Who);
         }
-
-        #region Commands
 
         private void WifiCraftCommand(CommandArgs args)
         {
@@ -209,6 +229,7 @@ namespace WifiCraft
                     {
                         _config = Configuration.Load();
                         _chestManager = new RangeManager(_config);
+                        LootSyncCompat.Reinitialize();
                         player.SendSuccessMessage("[WifiCraft] Configuration reloaded!");
                     }
                     else
@@ -291,6 +312,7 @@ namespace WifiCraft
             player.SendInfoMessage($"Your Crafting Range: [c/FFFF00:{craftRange}] tiles");
             player.SendInfoMessage($"Your Quick-Stack Range: [c/FFFF00:{stackRange}] tiles");
             player.SendInfoMessage($"Chests in Range: [c/00FFFF:{chestCount}]");
+            player.SendInfoMessage($"LootSync Compat: {(LootSyncCompat.IsLootSyncAvailable ? "[c/00FF00:Active]" : "[c/888888:Not Found]")}");
         }
 
         private void ShowChests(TSPlayer player)
@@ -347,7 +369,5 @@ namespace WifiCraft
                 shown++;
             }
         }
-
-        #endregion
     }
 }

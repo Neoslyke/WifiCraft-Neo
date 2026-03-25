@@ -81,6 +81,12 @@ namespace WifiCraft
 
                 Chest? chest = Main.chest[i];
                 if (chest == null) continue;
+                if (chest.bankChest) continue;
+
+                if (!LootSyncCompat.IsChestSafeToSync(chest.x, chest.y))
+                {
+                    continue;
+                }
 
                 chestsChecked++;
 
@@ -129,6 +135,11 @@ namespace WifiCraft
             Chest? chest = Main.chest[chestId];
             if (chest == null) return;
 
+            if (!LootSyncCompat.IsChestSafeToSync(chest.x, chest.y))
+            {
+                return;
+            }
+
             try
             {
                 for (int slot = 0; slot < MaxChestItems; slot++)
@@ -150,7 +161,6 @@ namespace WifiCraft
             }
             catch
             {
-                // Silently ignore sync errors
             }
         }
 
@@ -195,6 +205,11 @@ namespace WifiCraft
 
                 Chest? chest = Main.chest[chestId];
                 if (chest == null) continue;
+
+                if (!LootSyncCompat.IsChestSafeToSync(chest.x, chest.y))
+                {
+                    continue;
+                }
 
                 for (int slot = 0; slot < MaxChestItems; slot++)
                 {
